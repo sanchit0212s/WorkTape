@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WorkTape
 
-## Getting Started
+AI-assisted portfolio builder for creative professionals. Users pick a genre, upload work, answer a few prompts — the app generates a polished, single-page portfolio at a public slug.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Next.js 16** (App Router, React 19)
+- **Tailwind CSS v4**, **Framer Motion**, **lucide-react**
+- **Supabase** — Postgres + Auth + Storage
+- **OpenAI-compatible API** — Kimi K2.5 for bio/description generation
+- **Razorpay** — subscription payments (India)
+
+## Supported genres
+
+`photographer` · `graphic-designer` · `ui-ux-designer` · `writer` · `3d-artist` · `developer`
+
+## Architecture (Lego-brick templates)
+
+Templates live in `src/components/templates/<genre>/` and are registered in
+`src/components/templates/registry.ts`. The route `src/app/[slug]/page.tsx` reads
+the user's genre and lazy-loads the corresponding template.
+
+Each template receives a single prop — `{ data: PortfolioData }` — where
+`PortfolioData` is:
+
+```ts
+{
+  portfolio: {
+    display_name, tagline, bio_bullets, ai_bio, profile_photo_url,
+    social_links, custom_headline, genre, ...
+  }
+  projects: Array<{
+    title, description, ai_description, sort_order,
+    images: Array<{ url, alt_text, width, height, sort_order }>
+  }>
+  user: { email, full_name, avatar_url, ... }
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+See `src/types/database.ts` for full type definitions.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Templates are currently being designed externally.** The registry is intentionally
+empty — requests to `/[slug]` for any genre will 404 until templates are wired in.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Running locally
 
-## Learn More
+```bash
+pnpm install
+cp .env.example .env.local   # fill in Supabase, OpenAI, Razorpay keys
+pnpm dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Adding a template
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Create `src/components/templates/<genre>/<VariantName>Template.tsx`
+2. Default-export a component of type `ComponentType<TemplateProps>`
+3. Uncomment (or add) the entry in `registry.ts`
+4. Include `<WorktapeBadge />` in the footer
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+That's it — the route wires up automatically.
