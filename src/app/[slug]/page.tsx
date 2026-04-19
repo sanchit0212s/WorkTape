@@ -4,7 +4,11 @@ import { pickTemplate } from '@/components/templates/registry'
 import type { Genre, PortfolioData } from '@/types/database'
 import type { Metadata } from 'next'
 
-export const revalidate = 60
+// Always fetch fresh portfolio data — template / content edits should appear
+// on the published URL immediately, not after a cache tick. Supabase reads
+// are fast enough that a cold fetch per request is fine at our scale.
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 async function getPortfolioData(slug: string): Promise<PortfolioData | null> {
   const supabase = await createClient()

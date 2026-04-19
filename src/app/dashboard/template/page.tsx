@@ -27,6 +27,7 @@ export default function TemplatePickerPage() {
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<string | null>(null)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     const supabase = createClient()
@@ -60,6 +61,7 @@ export default function TemplatePickerPage() {
   async function selectVariant(slug: string) {
     if (!portfolio || saving) return
     setSaving(slug)
+    setSaveError(null)
 
     const supabase = createClient()
     const { error } = await supabase
@@ -67,9 +69,20 @@ export default function TemplatePickerPage() {
       .update({ template_variant: slug })
       .eq('id', portfolio.id)
 
-    if (!error) {
-      setPortfolio({ ...portfolio, template_variant: slug })
+    if (error) {
+      // Most common cause: the 002_template_variant.sql migration hasn't been
+      // run on the Supabase project yet, so the column doesn't exist. Surface
+      // it instead of swallowing so the user knows what to do.
+      setSaveError(
+        error.message.includes('template_variant')
+          ? 'The template_variant column is missing on your Supabase portfolios table. Run supabase/migrations/002_template_variant.sql against your database, then try again.'
+          : `Couldn't save selection: ${error.message}`,
+      )
+      setSaving(null)
+      return
     }
+
+    setPortfolio({ ...portfolio, template_variant: slug })
     setSaving(null)
   }
 
@@ -92,6 +105,12 @@ export default function TemplatePickerPage() {
       <p className="text-neutral-400 mb-8">
         Pick the design that best fits your work. You can change it any time.
       </p>
+
+      {saveError && (
+        <div className="mb-6 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-300 text-sm">
+          {saveError}
+        </div>
+      )}
 
       {!variants || variants.length === 0 ? (
         <div className="p-5 rounded-xl border border-neutral-800 bg-neutral-900/50">
