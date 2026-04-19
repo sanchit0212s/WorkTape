@@ -95,6 +95,20 @@ export default async function DashboardPage() {
           </p>
         </Link>
 
+        {/* Template */}
+        <Link
+          href="/dashboard/template"
+          className="group p-5 rounded-xl border border-neutral-800 hover:border-neutral-700 bg-neutral-900/50 transition-colors"
+        >
+          <h3 className="text-white font-medium flex items-center justify-between">
+            Template
+            <ArrowRight className="w-4 h-4 text-neutral-500 group-hover:text-white transition-colors" />
+          </h3>
+          <p className="text-sm text-neutral-400 mt-1">
+            Pick the design that best fits your work.
+          </p>
+        </Link>
+
         {/* Publish */}
         <Link
           href="/dashboard/publish"

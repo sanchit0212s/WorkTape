@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { templateRegistry } from '@/components/templates/registry'
+import { pickTemplate } from '@/components/templates/registry'
 import type { Genre, PortfolioData } from '@/types/database'
 import type { Metadata } from 'next'
 
@@ -121,7 +121,7 @@ export default async function PortfolioPage({
   }
 
   const genre = data.portfolio.genre as Genre
-  const loader = templateRegistry[genre]
+  const loader = pickTemplate(genre, data.portfolio.template_variant ?? undefined)
 
   if (!loader) {
     notFound()

@@ -37,6 +37,7 @@ export interface Portfolio {
   profile_photo_url: string | null
   social_links: Record<string, string>
   custom_headline: string | null
+  template_variant: string | null
   published_at: string | null
   created_at: string
   updated_at: string
